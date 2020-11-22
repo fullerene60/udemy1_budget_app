@@ -3,6 +3,7 @@ import 'widgets/new_transaction.dart';
 import 'widgets/chart.dart';
 import 'models/Transaction.dart';
 import 'widgets/transaction_list.dart';
+import 'dart:io';
 
 void main() {
   // //Needed to set preffered device orientation
@@ -106,8 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final _mq = MediaQuery.of(context);
+
+    final isLandscape = _mq.orientation == Orientation.landscape;
 
     var appBar = AppBar(
       title: Text(
@@ -127,11 +129,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
 
+    final abh = appBar.preferredSize.height;
+
     final txList = Container(
-      height: (MediaQuery.of(context).size.height -
-              appBar.preferredSize.height -
-              MediaQuery.of(context).padding.top) *
-          0.7,
+      height: (_mq.size.height - abh - _mq.padding.top) * 0.7,
       child: TransactionList(
         transactions: _userTransactions,
         tileStyle: tyleStyle,
@@ -140,9 +141,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () => _startNewTransaction(context)),
+      floatingActionButton: Platform.isAndroid
+          ? FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () => _startNewTransaction(context))
+          : Container(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       appBar: appBar,
       body: Column(
@@ -151,14 +154,12 @@ class _MyHomePageState extends State<MyHomePage> {
           //Some crazy fucking dart/java syntax that lets you place conditions on whether an element will exist within a list, fucking love it!
           if (isLandscape)
             Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.05,
+              height: (_mq.size.height - abh - _mq.padding.top) * 0.10,
               child:
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Text('Show Chart'),
-                Switch(
+                //Some widgets have an adaptive property that allow them change styles depending on the platform they are being used on
+                Switch.adaptive(
                     value: _showChart,
                     onChanged: (value) {
                       setState(() {
@@ -169,19 +170,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           if (!isLandscape)
             Container(
-                height: (MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height -
-                        MediaQuery.of(context).padding.top) *
-                    0.25,
+                height: (_mq.size.height - abh - _mq.padding.top) * 0.2,
                 child: Chart(_recentTransactions)),
 
           if (isLandscape)
             _showChart
                 ? Container(
-                    height: (MediaQuery.of(context).size.height -
-                            appBar.preferredSize.height -
-                            MediaQuery.of(context).padding.top) *
-                        0.25,
+                    height: (_mq.size.height - abh - _mq.padding.top) * 0.25,
                     child: Chart(_recentTransactions))
                 : Container(),
           txList
